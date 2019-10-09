@@ -1,0 +1,21 @@
+---
+- hosts: all
+
+  vars:
+    repo_url: https://github.com/ravenolf/soramitsu-test.git
+    image_name: soramitsu-test
+    image_tag: v1
+    image_exposed_port: 5000
+    
+    docker_install_compose: no
+    kubernetes_enable_web_ui: no
+
+    k8s_app_namespace: default
+    k8s_node_port: 30080
+    k8s_exposed_port: 80
+    k8s_replicas_count: 2 
+
+  roles:
+  - docker
+  - kubernetes
+  - deploy

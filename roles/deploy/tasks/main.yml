@@ -1,0 +1,66 @@
+---
+
+- name: Install Python PIP
+  apt:
+    name: python3-pip
+    force_apt_get: yes 
+    update_cache: yes
+    state: present
+
+- name: Install ansible modules dependancies
+  pip:
+    name: 
+    - openshift
+    - docker
+    state: present
+
+- name: Clone Repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: /tmp/{{ image_name }} 
+
+- name: Build Docker Image
+  docker_image:
+    build:
+      path: /tmp/{{ image_name }}
+      pull: yes
+    name: "{{ image_name }}"
+    tag: "{{ image_tag }}"
+    source: build
+
+- name: Clean Up
+  file:
+    path: /tmp/{{ image_name }}
+    state: absent
+
+- name: Ensure Kubernetes Nodes are Ready.
+  shell: "/usr/bin/kubectl get nodes"
+  register: nodes
+  until:      
+    - '" Ready "  in nodes.stdout'      
+  retries: 6
+  delay: 2
+
+- name: Create Deployment Name Space
+  k8s:
+    name: "{{ k8s_app_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Apply k8s Deployment
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/deployment.j2') }}"
+
+- name: Apply k8s Service
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/service.j2') }}"
+
+- pause:
+    seconds: 20
+
+- name: Check Website
+  uri:
+    url: "http://{{ inventory_hostname }}:{{ k8s_node_port }}"
