@@ -1,6 +1,8 @@
 
 ## Ansible
 
+This is an ansible playbook that deploys docker and a single-node kubernetes cluster on a remote host and deploys and smaple application on it.
+
 For the roles we use the ones from user `geerlingguy` from github:
 - **`docker` role**: https://github.com/geerlingguy/ansible-role-docker.git 
 - **`kubernetes` role**: https://github.com/geerlingguy/ansible-role-kubernetes.git 
